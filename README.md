@@ -18,6 +18,25 @@ VALSEA is presented as a **single unified API**.
 
 ---
 
+## Quick start (copy/paste)
+
+### ASR: transcribe a file
+
+```bash
+curl -X POST "https://api.valsea.asia/transcribe" \
+  -F "file=@audio.wav"
+```
+
+### Translation: translate text
+
+```bash
+curl -X POST "https://translation.valsea.asia/api/translate" \
+  -H "Content-Type: application/json" \
+  -d '{"text":"Good morning","source":"en","target":"id"}'
+```
+
+---
+
 ## ASR (Speech-to-Text)
 
 ### POST `/transcribe`
@@ -26,6 +45,12 @@ Transcribe an uploaded audio file.
 
 - **URL**: `POST https://api.valsea.asia/transcribe`
 - **Content-Type**: `multipart/form-data`
+
+#### File requirements
+
+- **Form field name**: `file`
+- **Max size**: 25MB (recommended)
+- **Formats**: WAV, MP3, AIFF, OGG, FLAC, WEBM, M4A (best-effort; WAV recommended)
 
 #### Query parameters
 
@@ -83,6 +108,48 @@ curl -X POST "https://api.valsea.asia/transcribe?language=singlish&accent=sg" \
 | `detectedLanguages` | string[] | Best-effort language codes. |
 | `accent_corrections` | array | Optional; may be missing/empty. |
 | `semantic_tags` | array | Optional; may be missing/empty. |
+
+#### JavaScript example (fetch)
+
+```js
+export async function transcribe({ file, language, accent = "sg", enableCorrection = true, enableTags = true }) {
+  const form = new FormData();
+  form.append("file", file);
+
+  const params = new URLSearchParams();
+  if (language) params.set("language", language);
+  if (accent) params.set("accent", accent);
+  params.set("enableCorrection", String(enableCorrection));
+  params.set("enableTags", String(enableTags));
+
+  const res = await fetch(`https://api.valsea.asia/transcribe?${params.toString()}`, {
+    method: "POST",
+    body: form,
+  });
+  if (!res.ok) throw new Error(`ASR failed: HTTP ${res.status}`);
+  return await res.json(); // ignore unknown fields
+}
+```
+
+#### Python example (requests)
+
+```python
+import requests
+
+def transcribe(path, language=None, accent="sg", enable_correction=True, enable_tags=True):
+    params = {
+        "accent": accent,
+        "enableCorrection": str(enable_correction).lower(),
+        "enableTags": str(enable_tags).lower(),
+    }
+    if language:
+        params["language"] = language
+
+    with open(path, "rb") as f:
+        r = requests.post("https://api.valsea.asia/transcribe", params=params, files={"file": f}, timeout=180)
+    r.raise_for_status()
+    return r.json()  # ignore unknown fields
+```
 
 #### Common examples
 
@@ -178,6 +245,35 @@ Translate plain text.
 ```
 
 > Clients must ignore unknown fields.
+
+#### JavaScript example (fetch)
+
+```js
+export async function translate({ text, source, target }) {
+  const res = await fetch("https://translation.valsea.asia/api/translate", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ text, source, target }),
+  });
+  if (!res.ok) throw new Error(`Translate failed: HTTP ${res.status}`);
+  return await res.json(); // ignore unknown fields
+}
+```
+
+#### Python example (requests)
+
+```python
+import requests
+
+def translate(text, source, target):
+    r = requests.post(
+        "https://translation.valsea.asia/api/translate",
+        json={"text": text, "source": source, "target": target},
+        timeout=30,
+    )
+    r.raise_for_status()
+    return r.json()  # ignore unknown fields
+```
 
 #### cURL
 
