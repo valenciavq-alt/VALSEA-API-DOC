@@ -13,26 +13,27 @@ This document describes the public, developer-facing VALSEA APIs for **Speech-to
 | **Translation** | `https://translation.valsea.asia` |
 | **Workflow Processing (optional)** | `https://api.valsea.app` |
 
-## Recommended Integration Flow (matches the frontend)
+## How to use these APIs (entry points + common patterns)
 
-Most developers should implement VALSEA exactly like the product UI:
+VALSEA is modular: you can **call any endpoint independently**, or chain multiple endpoints together depending on your product needs.
 
-1. **ASR (Speech → Text)**: upload audio → receive:
-   - `rawTranscript` (raw)
-   - `text` (post-processed)
-2. **Semantic tags / Annotated text** *(optional but recommended)*:
-   - from `POST /transcribe` via `enableTags=true` and/or `annotate=true`
-   - or run on existing text via `POST /annotate`
-3. **Clarified English (readability)** *(optional)*:
-   - from `POST /transcribe` via `clarify=true`
-   - or run on existing text via `POST /clarify`
-4. **Translation** *(optional)*:
-   - `POST https://translation.valsea.asia/api/translate`
-5. **Use-case output** *(optional, workflow service)*:
-   - `POST https://api.valsea.app/api/v1/semantic/process`
-   - `GET  https://api.valsea.app/api/v1/semantic/get?id={audio_id}`
+### Entry points
 
-You can start with step (1) only, then add the later steps progressively.
+- **Speech-to-Text (audio → transcript)**: `POST https://api.valsea.asia/transcribe`
+- **Text annotations (text → tags + annotated text)**: `POST https://api.valsea.asia/annotate`
+- **Clarified English (text → clearer English)**: `POST https://api.valsea.asia/clarify`
+- **Translation (text → translatedText)**: `POST https://translation.valsea.asia/api/translate`
+- **Use-case output (text/transcript → structured JSON)** *(optional workflow service)*:
+  - `POST https://api.valsea.app/api/v1/semantic/process`
+  - `GET  https://api.valsea.app/api/v1/semantic/get?id={audio_id}`
+
+### Common integration patterns
+
+- **ASR only**: call `/transcribe` and use `rawTranscript` + `text`.
+- **ASR + semantic tags / annotated text**: call `/transcribe?enableTags=true&annotate=true` (single request), or call `/annotate` if you already have text.
+- **ASR + clarified English**: call `/transcribe?clarify=true` (single request), or call `/clarify` if you already have text.
+- **Translate only**: call the Translation gateway endpoints directly (no ASR required).
+- **Workflow only**: call the optional workflow service with your transcript/text to produce structured outputs.
 
 ## Quickstart (copy/paste)
 
