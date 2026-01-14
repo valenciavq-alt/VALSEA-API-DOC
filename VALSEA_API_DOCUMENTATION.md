@@ -515,7 +515,40 @@ VALSEA handles seamless code-switching between:
 This section documents **Qwen ASR** language/dialect coverage as a reference for internal routing and quality expectations.
 
 - **Reference doc (Model Studio)**: `https://modelstudio.console.alibabacloud.com/ap-southeast-1/?tab=doc#/doc/?type=model&url=2989727`
-- **Note**: The Model Studio page may require console access/login. If you want the **full supported language list** copied verbatim into this document, paste the language table/list here and I will format it cleanly.
+
+### Supported languages (Qwen realtime ASR)
+
+Models:
+- `qwen3-asr-flash-realtime`
+- `qwen3-asr-flash-realtime-2025-10-27`
+
+Supported languages:
+- Chinese (**Mandarin**, **Sichuanese**, **Minnan**, **Wu**, **Cantonese**)
+- English
+- Japanese
+- German
+- Korean
+- Russian
+- French
+- Portuguese
+- Arabic
+- Italian
+- Spanish
+- Hindi
+- Indonesian
+- Thai
+- Turkish
+- Ukrainian
+- Vietnamese
+- Czech
+- Danish
+- Filipino
+- Finnish
+- Icelandic
+- Malay
+- Norwegian
+- Polish
+- Swedish
 
 ### 1️⃣ Accents / dialects Qwen ASR is strong at (high confidence)
 
