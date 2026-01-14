@@ -1,78 +1,61 @@
-# VALSEA API Documentation
+# VALSEA API Documentation (Developer)
 
-**Speech Intelligence for Southeast Asian Accents & Languages**
+Version: **2.1.0**  
+Status: **Production**  
 
-Version: 2.1.0  
-Status: Production  
+This document describes the public, developer-facing VALSEA APIs for **Speech-to-Text** and **Translation**, plus an optional workflow service.
 
-**Base URLs:**
-| Service | URL |
-|---------|-----|
-| ASR (Speech-to-Text) | `https://api.valsea.asia` |
-| Translation | `https://translation.valsea.asia` |
-| Workflow Processing (optional) | `https://api.valsea.app` |
+## Base URLs
 
----
+| Service | Base URL |
+|---------|----------|
+| **ASR (Speech-to-Text)** | `https://api.valsea.asia` |
+| **Translation** | `https://translation.valsea.asia` |
+| **Workflow Processing (optional)** | `https://api.valsea.app` |
+
+## Quickstart (copy/paste)
+
+### ASR: transcribe an audio file
+
+```bash
+curl -X POST "https://api.valsea.asia/transcribe" \
+  -F "file=@audio.wav"
+```
+
+### Translation: translate text
+
+```bash
+curl -X POST "https://translation.valsea.asia/api/translate" \
+  -H "Content-Type: application/json" \
+  -d '{"text":"Good morning","source":"en","target":"id"}'
+```
 
 ## Table of Contents
 
-1. [Overview](#overview)
-2. [Authentication](#authentication)
-3. [Rate Limits](#rate-limits)
-4. [Core APIs](#core-apis)
-   - [Speech-to-Text (ASR)](#speech-to-text-asr)
-   - [Translation](#translation)
-   - [Workflow Processing](#workflow-processing)
-5. [Use Case Formatters](#use-case-formatters)
-6. [Supported Languages](#supported-languages)
-7. [Error Handling](#error-handling)
-8. [SDKs & Examples](#sdks--examples)
-
----
-
-## Overview
-
-VALSEA provides AI-powered speech intelligence optimized for Southeast Asian languages and accents. Our API enables:
-
-- **Speech-to-Text**: Transcribe audio with support for Singlish, Chinglish, Vietnamese, Indonesian, Thai, Tagalog, and more
-- **Translation**: Neural machine translation between SEA languages
-- **Workflow Processing**: Transform transcripts into structured business outputs (meeting minutes, sales summaries, service logs, subtitles)
-
-### Key Features
-
-| Feature | Description |
-|---------|-------------|
-| 🌏 **SEA-Optimized** | Best-in-class accuracy for Southeast Asian accents |
-| 🔄 **Code-Switching** | Handles mixed-language speech (e.g., Singlish with Mandarin) |
-| ⚡ **Real-time** | Optional real-time support (separate service / deployment) |
-| 📊 **Workflow Ready** | AI-powered formatting for business use cases |
-| 🔒 **Secure** | Server-side processing, no client-side API keys |
+1. [ASR (Speech-to-Text)](#speech-to-text-asr)
+2. [Translation](#translation)
+3. [Workflow Processing (optional)](#workflow-processing)
+4. [Supported Languages](#supported-languages)
+5. [Error Handling](#error-handling)
+6. [SDKs & Examples](#sdks--examples)
+7. [Rate Limits](#rate-limits)
+8. [Authentication](#authentication)
 
 ---
 
 ## Authentication
 
-### Authentication (Public Beta)
+### Public Beta
 
 The public endpoints documented below are currently available **without authentication**.
 
 If you need enterprise authentication (API keys / request signing), contact `sales@valsea.app`.
 
-### Request Signing (Enterprise)
-
-For enterprise clients, request signing is available for additional security. Contact sales@valsea.app for details.
-
 ---
 
 ## Rate Limits
 
-| Plan | Requests/min | Audio Minutes/month | Characters/month (Translation) |
-|------|-------------|---------------------|--------------------------------|
-| Free | 10 | 60 | 100,000 |
-| Pro | 100 | 1,000 | 1,000,000 |
-| Enterprise | Custom | Custom | Custom |
-
-Rate limit headers are included in all responses:
+Rate limits may apply and can change by plan. If present, rate limit headers look like:
 
 ```http
 X-RateLimit-Limit: 100
@@ -81,8 +64,6 @@ X-RateLimit-Reset: 1704067200
 ```
 
 ---
-
-## Core APIs
 
 ### Speech-to-Text (ASR)
 
