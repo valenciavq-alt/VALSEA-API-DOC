@@ -114,6 +114,27 @@ Content-Type: multipart/form-data
 | `enableCorrection` | Boolean | `true` | Apply accent-aware mishear corrections |
 | `enableTags` | Boolean | `true` | Extract semantic tags (times, dates, entities, etc.) |
 
+##### Which setting is best for which language?
+
+To get the best results, choose the `language` preset that matches your audio. These presets route to the best-performing internal configuration **without exposing provider/model details**.
+
+| Audio language / mix | Recommended `language` | Recommended `accent` | Notes |
+|---|---|---|---|
+| Unknown / mixed / “SEA mix” | *(omit `language`)* or `auto` | `sg` (or your region) | Best default. Handles mixed speech and code-switching. |
+| Singapore English / Singlish | `singlish` | `sg` | Best for Singlish particles (lah/lor/leh), code-switching, and SG vocabulary. |
+| English (general) | `en` | `en` (or your region) | Use when the audio is mostly English. |
+| Chinese (Mandarin + regional accents + common dialect families) | `zh` | `cn` | Best for Mandarin and many Chinese accent/dialect scenarios. |
+| Vietnamese | `vi` | `vi` | Best for Vietnamese speech. |
+| Thai | `th` | `th` | Best for Thai speech. |
+| Indonesian | `id` | `id` | Best for Bahasa Indonesia. |
+| Malay | `ms` | `my` | Best for Bahasa Melayu. |
+| Tamil | `ta` | `sg` (or your region) | Best for Tamil speech (SEA contexts). |
+| Filipino / Tagalog | `fil` | `ph` | Best for Tagalog/Filipino. |
+
+Notes:
+- **`accent` only affects post-processing** (mishear corrections / normalization). It does not “force” a language.
+- If you pass the wrong `language`, the system will still attempt transcription, but accuracy may degrade.
+
 **Response:**
 
 ```json
