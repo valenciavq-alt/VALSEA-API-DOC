@@ -1,6 +1,6 @@
 # VALSEA API Documentation (Developer)
 
-Version: **2.1.0**  
+Version: **2.2.0**  
 Status: **Production**  
 
 This document describes the public, developer-facing VALSEA APIs for **Speech-to-Text** and **Translation**, plus an optional workflow service.
@@ -13,12 +13,40 @@ This document describes the public, developer-facing VALSEA APIs for **Speech-to
 | **Translation** | `https://translation.valsea.asia` |
 | **Workflow Processing (optional)** | `https://api.valsea.app` |
 
+## Recommended Integration Flow (matches the frontend)
+
+Most developers should implement VALSEA exactly like the product UI:
+
+1. **ASR (Speech → Text)**: upload audio → receive:
+   - `rawTranscript` (raw)
+   - `text` (post-processed)
+2. **Semantic tags / Annotated text** *(optional but recommended)*:
+   - from `POST /transcribe` via `enableTags=true` and/or `annotate=true`
+   - or run on existing text via `POST /annotate`
+3. **Clarified English (readability)** *(optional)*:
+   - from `POST /transcribe` via `clarify=true`
+   - or run on existing text via `POST /clarify`
+4. **Translation** *(optional)*:
+   - `POST https://translation.valsea.asia/api/translate`
+5. **Use-case output** *(optional, workflow service)*:
+   - `POST https://api.valsea.app/api/v1/semantic/process`
+   - `GET  https://api.valsea.app/api/v1/semantic/get?id={audio_id}`
+
+You can start with step (1) only, then add the later steps progressively.
+
 ## Quickstart (copy/paste)
 
 ### ASR: transcribe an audio file
 
 ```bash
 curl -X POST "https://api.valsea.asia/transcribe" \
+  -F "file=@audio.wav"
+```
+
+### ASR: transcribe + semantic tags + annotated text + clarified English (single call)
+
+```bash
+curl -X POST "https://api.valsea.asia/transcribe?enableTags=true&annotate=true&clarify=true" \
   -F "file=@audio.wav"
 ```
 
@@ -90,10 +118,12 @@ Content-Type: multipart/form-data
 
 | Parameter | Type | Default | Description |
 |-----------|------|---------|-------------|
-| `language` | String | `auto` | Language hint: `auto`, `singlish`, `en`, `zh`, `vi`, `th`, `id`, `ms`, `ta`, `fil` |
+| `language` | String | `auto` | Language hint: `auto`, `singlish`, `en`, `zh`, `vi`, `th`, `id`, `ms`, `ta`, `fil`, `ko` |
 | `accent` | String | `sg` | Accent hint for corrections: `sg`, `my`, `id`, `th`, `vi`, `ph`, `cn`, `en` |
 | `enableCorrection` | Boolean | `true` | Apply accent-aware mishear corrections |
 | `enableTags` | Boolean | `true` | Extract semantic tags (times, dates, entities, etc.) |
+| `annotate` | Boolean | `false` | If `true`, return `annotated_text` + `annotations` (inline/structured annotations based on semantic tags) |
+| `clarify` | Boolean | `false` | If `true`, return `clarified_text` (more understandable English for readability) |
 
 ##### Which setting is best for which language?
 
@@ -132,11 +162,86 @@ Notes:
 - `accent_corrections` and `semantic_tags` may be missing or empty; clients should handle both.
 - Clients should ignore unknown fields (new fields may be added over time).
 
+##### Annotated text (optional)
+
+If you set `annotate=true`, the response can include:
+- `annotated_text`: the transcript with inline markers, e.g. `⟦tag⟧phrase⟦/tag⟧`
+- `annotations`: structured ranges `{ start, end, tag, phrase }` for building your own UI highlights
+
+##### Clarified English (optional)
+
+If you set `clarify=true`, the response can include:
+- `clarified_text`: a readability-focused English version of the transcript (best-effort post-processing)
+
+---
+
+#### POST /annotate
+
+Annotate an existing transcript (no audio upload) with semantic tags and optional accent corrections.
+
+```http
+POST https://api.valsea.asia/annotate
+Content-Type: application/json
+```
+
+```json
+{
+  "text": "walao wait so long lah",
+  "accent": "sg",
+  "enableCorrection": true,
+  "enableTags": true
+}
+```
+
+---
+
+#### POST /clarify
+
+Convert an existing transcript into more understandable English for UI readability.
+
+```http
+POST https://api.valsea.asia/clarify
+Content-Type: application/json
+```
+
+```json
+{
+  "text": "walao wait so long lah",
+  "accent": "sg"
+}
+```
+
 **Example (cURL):**
 
 ```bash
 curl -X POST "https://api.valsea.asia/transcribe?language=singlish&accent=sg" \
   -F "file=@meeting.mp3"
+```
+
+**Examples (cURL + jq):**
+
+Malay (ms) with SG accent post-processing:
+
+```bash
+curl -sS -X POST 'https://api.valsea.asia/transcribe?language=ms&accent=sg' \
+  -F 'file=@test_speech.aiff' \
+| jq '{text, rawTranscript, detectedLanguages, accent_corrections, semantic_tags, corrections, semanticTags, error, message}'
+```
+
+Tamil (ta):
+
+```bash
+curl -sS -X POST 'https://api.valsea.asia/transcribe?language=ta' \
+  -F 'file=@test_speech.aiff' \
+| jq '{text, error, message}'
+```
+
+Korean (ko):
+
+```bash
+curl -sS -X POST 'https://api.valsea.asia/transcribe?language=ko' \
+  -F 'file=@test_speech.aiff' \
+| jq '{text, error, message}'
 ```
 
 ---
