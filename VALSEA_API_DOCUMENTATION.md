@@ -1,78 +1,89 @@
-# VALSEA API Documentation
+# VALSEA API Documentation (Developer)
 
-**Speech Intelligence for Southeast Asian Accents & Languages**
+Version: **2.2.0**  
+Status: **Production**  
 
-Version: 2.1.0  
-Status: Production  
+This document describes the public, developer-facing VALSEA APIs for **Speech-to-Text** and **Translation**, plus an optional workflow service.
 
-**Base URLs:**
-| Service | URL |
-|---------|-----|
-| ASR (Speech-to-Text) | `https://api.valsea.asia` |
-| Translation | `https://translation.valsea.asia` |
-| Workflow Processing (optional) | `https://api.valsea.app` |
+## Base URLs
 
----
+| Service | Base URL |
+|---------|----------|
+| **ASR (Speech-to-Text)** | `https://api.valsea.asia` |
+| **Translation** | `https://translation.valsea.asia` |
+| **Workflow Processing (optional)** | `https://api.valsea.app` |
+
+## Recommended Integration Flow (matches the frontend)
+
+Most developers should implement VALSEA exactly like the product UI:
+
+1. **ASR (Speech → Text)**: upload audio → receive:
+   - `rawTranscript` (raw)
+   - `text` (post-processed)
+2. **Semantic tags / Annotated text** *(optional but recommended)*:
+   - from `POST /transcribe` via `enableTags=true` and/or `annotate=true`
+   - or run on existing text via `POST /annotate`
+3. **Clarified English (readability)** *(optional)*:
+   - from `POST /transcribe` via `clarify=true`
+   - or run on existing text via `POST /clarify`
+4. **Translation** *(optional)*:
+   - `POST https://translation.valsea.asia/api/translate`
+5. **Use-case output** *(optional, workflow service)*:
+   - `POST https://api.valsea.app/api/v1/semantic/process`
+   - `GET  https://api.valsea.app/api/v1/semantic/get?id={audio_id}`
+
+You can start with step (1) only, then add the later steps progressively.
+
+## Quickstart (copy/paste)
+
+### ASR: transcribe an audio file
+
+```bash
+curl -X POST "https://api.valsea.asia/transcribe" \
+  -F "file=@audio.wav"
+```
+
+### ASR: transcribe + semantic tags + annotated text + clarified English (single call)
+
+```bash
+curl -X POST "https://api.valsea.asia/transcribe?enableTags=true&annotate=true&clarify=true" \
+  -F "file=@audio.wav"
+```
+
+### Translation: translate text
+
+```bash
+curl -X POST "https://translation.valsea.asia/api/translate" \
+  -H "Content-Type: application/json" \
+  -d '{"text":"Good morning","source":"en","target":"id"}'
+```
 
 ## Table of Contents
 
-1. [Overview](#overview)
-2. [Authentication](#authentication)
-3. [Rate Limits](#rate-limits)
-4. [Core APIs](#core-apis)
-   - [Speech-to-Text (ASR)](#speech-to-text-asr)
-   - [Translation](#translation)
-   - [Workflow Processing](#workflow-processing)
-5. [Use Case Formatters](#use-case-formatters)
-6. [Supported Languages](#supported-languages)
-7. [Error Handling](#error-handling)
-8. [SDKs & Examples](#sdks--examples)
-
----
-
-## Overview
-
-VALSEA provides AI-powered speech intelligence optimized for Southeast Asian languages and accents. Our API enables:
-
-- **Speech-to-Text**: Transcribe audio with support for Singlish, Chinglish, Vietnamese, Indonesian, Thai, Tagalog, and more
-- **Translation**: Neural machine translation between SEA languages
-- **Workflow Processing**: Transform transcripts into structured business outputs (meeting minutes, sales summaries, service logs, subtitles)
-
-### Key Features
-
-| Feature | Description |
-|---------|-------------|
-| 🌏 **SEA-Optimized** | Best-in-class accuracy for Southeast Asian accents |
-| 🔄 **Code-Switching** | Handles mixed-language speech (e.g., Singlish with Mandarin) |
-| ⚡ **Real-time** | Optional real-time support (separate service / deployment) |
-| 📊 **Workflow Ready** | AI-powered formatting for business use cases |
-| 🔒 **Secure** | Server-side processing, no client-side API keys |
+1. [ASR (Speech-to-Text)](#speech-to-text-asr)
+2. [Translation](#translation)
+3. [Workflow Processing (optional)](#workflow-processing)
+4. [Supported Languages](#supported-languages)
+5. [Error Handling](#error-handling)
+6. [SDKs & Examples](#sdks--examples)
+7. [Rate Limits](#rate-limits)
+8. [Authentication](#authentication)
 
 ---
 
 ## Authentication
 
-### Authentication (Public Beta)
+### Public Beta
 
 The public endpoints documented below are currently available **without authentication**.
 
-If you need enterprise authentication (API keys / request signing), contact `sales@valsea.app`.
-
-### Request Signing (Enterprise)
-
-For enterprise clients, request signing is available for additional security. Contact sales@valsea.app for details.
+If you need enterprise authentication (API keys / request signing), contact `hello@valsea.app`.
 
 ---
 
 ## Rate Limits
 
-| Plan | Requests/min | Audio Minutes/month | Characters/month (Translation) |
-|------|-------------|---------------------|--------------------------------|
-| Free | 10 | 60 | 100,000 |
-| Pro | 100 | 1,000 | 1,000,000 |
-| Enterprise | Custom | Custom | Custom |
-
-Rate limit headers are included in all responses:
+Rate limits may apply and can change by plan. If present, rate limit headers look like:
 
 ```http
 X-RateLimit-Limit: 100
@@ -81,8 +92,6 @@ X-RateLimit-Reset: 1704067200
 ```
 
 ---
-
-## Core APIs
 
 ### Speech-to-Text (ASR)
 
@@ -109,10 +118,33 @@ Content-Type: multipart/form-data
 
 | Parameter | Type | Default | Description |
 |-----------|------|---------|-------------|
-| `language` | String | `auto` | Language hint: `auto`, `singlish`, `en`, `zh`, `vi`, `th`, `id`, `ms`, `ta`, `fil` |
+| `language` | String | `auto` | Language hint: `auto`, `singlish`, `en`, `zh`, `vi`, `th`, `id`, `ms`, `ta`, `fil`, `ko` |
 | `accent` | String | `sg` | Accent hint for corrections: `sg`, `my`, `id`, `th`, `vi`, `ph`, `cn`, `en` |
 | `enableCorrection` | Boolean | `true` | Apply accent-aware mishear corrections |
 | `enableTags` | Boolean | `true` | Extract semantic tags (times, dates, entities, etc.) |
+| `annotate` | Boolean | `false` | If `true`, return `annotated_text` + `annotations` (inline/structured annotations based on semantic tags) |
+| `clarify` | Boolean | `false` | If `true`, return `clarified_text` (more understandable English for readability) |
+
+##### Which setting is best for which language?
+
+To get the best results, choose the `language` preset that matches your audio. These presets route to the best-performing internal configuration **without exposing provider/model details**.
+
+| Audio language / mix | Recommended `language` | Recommended `accent` | Notes |
+|---|---|---|---|
+| Unknown / mixed / “SEA mix” | *(omit `language`)* or `auto` | `sg` (or your region) | Best default. Handles mixed speech and code-switching. |
+| Singapore English / Singlish | `singlish` | `sg` | Best for Singlish particles (lah/lor/leh), code-switching, and SG vocabulary. |
+| English (general) | `en` | `en` (or your region) | Use when the audio is mostly English. |
+| Chinese (Mandarin + regional accents + common dialect families) | `zh` | `cn` | Best for Mandarin and many Chinese accent/dialect scenarios. |
+| Vietnamese | `vi` | `vi` | Best for Vietnamese speech. |
+| Thai | `th` | `th` | Best for Thai speech. |
+| Indonesian | `id` | `id` | Best for Bahasa Indonesia. |
+| Malay | `ms` | `my` | Best for Bahasa Melayu. |
+| Tamil | `ta` | `sg` (or your region) | Best for Tamil speech (SEA contexts). |
+| Filipino / Tagalog | `fil` | `ph` | Best for Tagalog/Filipino. |
+
+Notes:
+- **`accent` only affects post-processing** (mishear corrections / normalization). It does not “force” a language.
+- If you pass the wrong `language`, the system will still attempt transcription, but accuracy may degrade.
 
 **Response:**
 
@@ -130,11 +162,86 @@ Notes:
 - `accent_corrections` and `semantic_tags` may be missing or empty; clients should handle both.
 - Clients should ignore unknown fields (new fields may be added over time).
 
+##### Annotated text (optional)
+
+If you set `annotate=true`, the response can include:
+- `annotated_text`: the transcript with inline markers, e.g. `⟦tag⟧phrase⟦/tag⟧`
+- `annotations`: structured ranges `{ start, end, tag, phrase }` for building your own UI highlights
+
+##### Clarified English (optional)
+
+If you set `clarify=true`, the response can include:
+- `clarified_text`: a readability-focused English version of the transcript (best-effort post-processing)
+
+---
+
+#### POST /annotate
+
+Annotate an existing transcript (no audio upload) with semantic tags and optional accent corrections.
+
+```http
+POST https://api.valsea.asia/annotate
+Content-Type: application/json
+```
+
+```json
+{
+  "text": "walao wait so long lah",
+  "accent": "sg",
+  "enableCorrection": true,
+  "enableTags": true
+}
+```
+
+---
+
+#### POST /clarify
+
+Convert an existing transcript into more understandable English for UI readability.
+
+```http
+POST https://api.valsea.asia/clarify
+Content-Type: application/json
+```
+
+```json
+{
+  "text": "walao wait so long lah",
+  "accent": "sg"
+}
+```
+
 **Example (cURL):**
 
 ```bash
 curl -X POST "https://api.valsea.asia/transcribe?language=singlish&accent=sg" \
   -F "file=@meeting.mp3"
+```
+
+**Examples (cURL + jq):**
+
+Malay (ms) with SG accent post-processing:
+
+```bash
+curl -sS -X POST 'https://api.valsea.asia/transcribe?language=ms&accent=sg' \
+  -F 'file=@test_speech.aiff' \
+| jq '{text, rawTranscript, detectedLanguages, accent_corrections, semantic_tags, corrections, semanticTags, error, message}'
+```
+
+Tamil (ta):
+
+```bash
+curl -sS -X POST 'https://api.valsea.asia/transcribe?language=ta' \
+  -F 'file=@test_speech.aiff' \
+| jq '{text, error, message}'
+```
+
+Korean (ko):
+
+```bash
+curl -sS -X POST 'https://api.valsea.asia/transcribe?language=ko' \
+  -F 'file=@test_speech.aiff' \
+| jq '{text, error, message}'
 ```
 
 ---
@@ -681,8 +788,7 @@ Translation service health with latency check.
 
 - **Documentation**: https://docs.valsea.app
 - **API Status**: https://status.valsea.app
-- **Email**: support@valsea.app
-- **Enterprise Sales**: sales@valsea.app
+- **Email**: hello@valsea.app
 
 ---
 
