@@ -1,3 +1,5 @@
+> **Latest full API spec (ASR + Translate):** see [`VALSEA_API_DOCUMENTATION.md`](./VALSEA_API_DOCUMENTATION.md)
+
 # VALSEA Developer API Documentation
 
 **Production services**
