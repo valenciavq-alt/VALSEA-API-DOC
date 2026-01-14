@@ -21,13 +21,23 @@ VALSEA is presented as a **single unified API**.
 
 ---
 
-## Recommended integration flow (matches the frontend)
+## How to use these APIs (entry points + common patterns)
 
-1. **ASR (upload audio)** → get `rawTranscript` then `text`
-2. **Semantic tags / annotated text** *(optional)* → `semantic_tags`, `annotated_text`
-3. **Clarified English** *(optional)* → `clarified_text`
-4. **Translation** *(optional)* → `translatedText`
-5. **Use-case output** *(optional)* → workflow structured JSON
+You can call any endpoint independently, or chain multiple endpoints together.
+
+**Entry points**
+- **ASR (audio → transcript)**: `POST /transcribe`
+- **Text annotations (text → tags + annotated text)**: `POST /annotate`
+- **Clarified English (text → clearer English)**: `POST /clarify`
+- **Translation (text → translatedText)**: `POST https://translation.valsea.asia/api/translate`
+- **Use-case output (structured JSON)** *(optional)*: workflow service endpoints
+
+**Common patterns**
+- **ASR only**: `/transcribe`
+- **ASR + tags/annotations**: `/transcribe?enableTags=true&annotate=true` or `/annotate`
+- **ASR + clarified English**: `/transcribe?clarify=true` or `/clarify`
+- **Translation only**: translation gateway endpoints
+- **Use-case only**: workflow endpoints (structured output)
 
 ---
 
