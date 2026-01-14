@@ -49,7 +49,7 @@ curl -X POST "https://translation.valsea.asia/api/translate" \
 
 The public endpoints documented below are currently available **without authentication**.
 
-If you need enterprise authentication (API keys / request signing), contact `sales@valsea.app`.
+If you need enterprise authentication (API keys / request signing), contact `hello@valsea.app`.
 
 ---
 
@@ -683,8 +683,7 @@ Translation service health with latency check.
 
 - **Documentation**: https://docs.valsea.app
 - **API Status**: https://status.valsea.app
-- **Email**: support@valsea.app
-- **Enterprise Sales**: sales@valsea.app
+- **Email**: hello@valsea.app
 
 ---
 
