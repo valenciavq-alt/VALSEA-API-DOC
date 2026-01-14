@@ -510,6 +510,53 @@ VALSEA handles seamless code-switching between:
 
 ---
 
+## Qwen ASR Language Coverage (Reference)
+
+This section documents **Qwen ASR** language/dialect coverage as a reference for internal routing and quality expectations.
+
+- **Reference doc (Model Studio)**: `https://modelstudio.console.alibabacloud.com/ap-southeast-1/?tab=doc#/doc/?type=model&url=2989727`
+- **Note**: The Model Studio page may require console access/login. If you want the **full supported language list** copied verbatim into this document, paste the language table/list here and I will format it cleanly.
+
+### 1️⃣ Accents / dialects Qwen ASR is strong at (high confidence)
+
+#### Mandarin Chinese accents (safe / first-class)
+
+Mandarin spoken with regional accents is a first-class use case. Examples:
+
+- Beijing accent Mandarin
+- Shanghai-accented Mandarin
+- Northeastern Mandarin
+- Sichuan-accented Mandarin
+- Henan / Shandong / Hebei accented Mandarin
+- Southern Mandarin accents (Guangxi, Yunnan, etc.)
+
+#### Chinese dialects (non-Mandarin) — strong capability
+
+Supported dialect families include:
+
+- **Wu Chinese**
+  - Shanghainese
+  - Suzhou
+  - Ningbo
+  - Hangzhou
+- **Yue Chinese**
+  - Cantonese (Guangdong)
+  - Hong Kong Cantonese
+- **Min**
+  - Minnan / Hokkien
+  - Teochew
+  - Taiwanese Hokkien (partial)
+- **Southwestern dialects**
+  - Sichuanese
+
+### Guidance
+
+- **Best results**: 16 kHz+ sampling, clear speech, minimal background noise.
+- **Dialect labeling**: Prefer using `language=zh` for Chinese; dialect identification may still be “best-effort” depending on the audio.
+- **Do not hard-fail**: If dialect detection is uncertain, fall back to general Chinese handling rather than rejecting the request.
+
+---
+
 ## Error Handling
 
 ### Error Response Format
