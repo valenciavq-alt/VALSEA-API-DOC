@@ -78,7 +78,11 @@ curl -X POST "https://translation.valsea.asia/api/translate" \
 
 The public endpoints documented below are currently available **without authentication**.
 
+**You do not need an API key** to call the production endpoints in this document during Public Beta.
+
 If you need enterprise authentication (API keys / request signing), contact `hello@valsea.app`.
+
+> Note: The optional workflow service (`https://api.valsea.app`) may be deployed with separate access controls depending on plan/tenant.
 
 ---
 
