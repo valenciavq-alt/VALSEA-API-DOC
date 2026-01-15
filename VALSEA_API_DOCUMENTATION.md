@@ -128,7 +128,7 @@ Content-Type: multipart/form-data
 | `enableCorrection` | Boolean | `true` | Apply accent-aware mishear corrections |
 | `enableTags` | Boolean | `true` | Extract semantic tags (times, dates, entities, etc.) |
 | `annotate` | Boolean | `false` | If `true`, return `annotated_text` + `annotations` (inline/structured annotations based on semantic tags) |
-| `clarify` | Boolean | `false` | If `true`, return `clarified_text` (more understandable English for readability) |
+| `clarify` | Boolean | `false` | If `true`, return `clarified_text` (local expressions converted to natural, fluent English using AI) |
 
 ##### Which setting is best for which language?
 
@@ -176,7 +176,7 @@ If you set `annotate=true`, the response can include:
 ##### Clarified English (optional)
 
 If you set `clarify=true`, the response can include:
-- `clarified_text`: a readability-focused English version of the transcript (best-effort post-processing)
+- `clarified_text`: local expressions converted to natural, fluent English using AI (vendor-agnostic).
 
 ---
 
@@ -202,7 +202,7 @@ Content-Type: application/json
 
 #### POST /clarify
 
-Convert an existing transcript into more understandable English for UI readability.
+Convert an existing transcript into natural, fluent English by rewriting local expressions using AI.
 
 ```http
 POST https://api.valsea.asia/clarify
